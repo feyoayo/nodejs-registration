@@ -1,8 +1,17 @@
 const User = require('./models/User')
 const Role = require('./models/Role')
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const {validationResult} = require('express-validator')
+const { secret } = require('./config')
 
+const generateAccessToket = (id, roles) => {
+    const payload = {
+        id,
+        roles
+    }
+    return jwt.sign(payload, secret, {expiresIn: '24h'})
+}
 
 
 class authController {
@@ -18,7 +27,7 @@ class authController {
                 return res.status(400).json({message: 'User already exist'})
             }
             const hashPwd = bcrypt.hashSync(password, 7)
-            const userRole = Role.findOne({value: 'USER'})
+            const userRole = await Role.findOne({value: 'USER'})
             const user = new User ({username, password: hashPwd, roles: [userRole.value] })
             await user.save()
             return res.json({message: 'Registration successful'})
@@ -30,6 +39,19 @@ class authController {
 
     async login(req, res) {
         try {
+            const {username, password} = req.body
+            const user = await User.findOne({username})
+            if(!user){
+                return res.status(400).json({message: `User ${username} not found`})
+            }
+            const isValid = bcrypt.compareSync(password, user.password)
+            if(!isValid){
+                return res.status(400).json({message: `Invalid password`})
+            }
+
+            const token = generateAccessToket(user._id, user.roles)
+            return res.json({Status: 'ok', token, roles: user.roles})
+
         } catch (e) {
             console.log(e)
             res.status(400).json({message: 'Login error'})
@@ -39,12 +61,13 @@ class authController {
 
     async getUsers(req, res) {
         try {
-            res.json('server work')
+            const users = await User.find()
+            res.json(users)
         } catch (e) {
             console.log(e)
         }
     }
-};
+}
 
 module
     .exports = new authController()
