@@ -11,5 +11,6 @@ router.post('/registration', [
 ]  , controller.registration)
 router.post('/login', controller.login)
 router.get('/users',roleMiddleware(['USER']), controller.getUsers)
+router.delete('/users/:id', controller.deleteUser)
 
 module.exports = router

@@ -67,6 +67,20 @@ class authController {
             console.log(e)
         }
     }
+    async deleteUser(req, res)
+    {
+        const id = req.params.id
+        try{
+            await User.findByIdAndDelete(id)
+            const deletedUser = await User.findById(id)
+            if(!deletedUser){
+                return res.json({message: 'User deleted'})
+            }
+        } catch (e) {
+            console.log(e)
+            res.status(400).json({message: e})
+        }
+    }
 }
 
 module
