@@ -7,13 +7,13 @@ module.exports = function (req, res, next){
         try{
             const token = req.headers.authorization
             if(!token){
-                return res.status(403).json({message: "User haven't autorizated  "})
+                return res.status(403).json({message: "User haven't autorizated"})
             }
             const decodedData = jwt.verify(token, secret)
             req.user = decodedData
             next()
 
         } catch (e) {
-            return res.status(403).json({message: "User haven't autorizated  "})
+            return res.status(403).json({message: "User haven't autorizated"})
         }
 }
